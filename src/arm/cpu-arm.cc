@@ -34,6 +34,10 @@
 
 #if defined(V8_TARGET_ARCH_ARM)
 
+#if defined(__IPHONE_2_0)
+#include <libkern/OSCacheControl.h>
+#endif
+
 #include "cpu.h"
 #include "macro-assembler.h"
 
@@ -68,7 +72,10 @@ void CPU::FlushICache(void* start, size_t size) {
   register uint32_t end asm("a2") =
       reinterpret_cast<uint32_t>(start) + size;
   register uint32_t flg asm("a3") = 0;
-  #ifdef __ARM_EABI__
+#if defined(__IPHONE_2_0) && __IPHONE_2_0 > 0
+	flg = flg;
+	sys_icache_invalidate((void*)beg, end);
+#elif defined(__ARM_EABI__)
     #if defined (__arm__) && !defined(__thumb__)
       // __arm__ may be defined in thumb mode.
       register uint32_t scno asm("r7") = __ARM_NR_cacheflush;

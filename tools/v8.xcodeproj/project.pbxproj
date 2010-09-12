@@ -1743,6 +1743,7 @@
 				);
 				HEADER_SEARCH_PATHS = ../src;
 				PRODUCT_NAME = "v8-arm";
+				SDKROOT = iphoneos4.0;
 				STRIP_STYLE = debugging;
 			};
 			name = Debug;
@@ -1757,6 +1758,7 @@
 				);
 				HEADER_SEARCH_PATHS = ../src;
 				PRODUCT_NAME = "v8-arm";
+				SDKROOT = iphoneos4.0;
 				STRIP_STYLE = debugging;
 			};
 			name = Release;

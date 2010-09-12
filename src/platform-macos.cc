@@ -185,7 +185,7 @@ void OS::Abort() {
 
 
 void OS::DebugBreak() {
-  asm("int $3");
+//  asm("int $3");
 }
 
 
@@ -578,6 +578,11 @@ class Sampler::PlatformData : public Malloced {
 #else
 #define REGISTER_FIELD(name) e ## name
 #endif  // __DARWIN_UNIX03
+#elif V8_HOST_ARCH_ARM
+		  thread_state_flavor_t flavor = ARM_THREAD_STATE;
+		  arm_thread_state_t state;
+		  mach_msg_type_number_t count = ARM_THREAD_STATE_COUNT;		  
+#define REGISTER_FIELD(name) __ ## name
 #else
 #error Unsupported Mac OS X host architecture.
 #endif  // V8_HOST_ARCH
@@ -586,9 +591,15 @@ class Sampler::PlatformData : public Malloced {
                              flavor,
                              reinterpret_cast<natural_t*>(&state),
                              &count) == KERN_SUCCESS) {
-          sample->pc = reinterpret_cast<Address>(state.REGISTER_FIELD(ip));
-          sample->sp = reinterpret_cast<Address>(state.REGISTER_FIELD(sp));
-          sample->fp = reinterpret_cast<Address>(state.REGISTER_FIELD(bp));
+#if V8_HOST_ARCH_ARM
+			sample->pc = reinterpret_cast<Address>(state.REGISTER_FIELD(pc));
+			sample->sp = reinterpret_cast<Address>(state.REGISTER_FIELD(sp));
+			sample->fp = reinterpret_cast<Address>(state.REGISTER_FIELD(lr));			
+#else
+			sample->pc = reinterpret_cast<Address>(state.REGISTER_FIELD(ip));
+			sample->sp = reinterpret_cast<Address>(state.REGISTER_FIELD(sp));
+			sample->fp = reinterpret_cast<Address>(state.REGISTER_FIELD(bp));			
+#endif
           sampler_->SampleStack(sample);
         }
         thread_resume(profiled_thread_);
@@ -661,5 +672,11 @@ void Sampler::Stop() {
 }
 
 #endif  // ENABLE_LOGGING_AND_PROFILING
+	
+	bool OS::ArmCpuHasFeature(CpuFeature feature) {
+		UNIMPLEMENTED();
+		return false;
+	}
+	
 
 } }  // namespace v8::internal
